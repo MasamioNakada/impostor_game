@@ -73,7 +73,8 @@ class GameStorage {
             
             // Verificar si la configuración es reciente (máximo 24 horas)
             const maxAge = 24 * 60 * 60 * 1000; // 24 horas en milisegundos
-            if (Date.now() - config.timestamp > maxAge) {
+            // Validamos timestamp solo si existe (para compatibilidad)
+            if (config.timestamp && (Date.now() - config.timestamp > maxAge)) {
                 this.removeConfig();
                 return null;
             }

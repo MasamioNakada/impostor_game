@@ -65,8 +65,8 @@
             // Verificar si hay configuración existente
             const existingConfig = window.gameStorage.getConfig();
             
-            if (existingConfig && existingConfig.apiKey) {
-                // Si hay configuración válida, ir directamente a jugadores
+            if (existingConfig) {
+                // Si hay configuración (incluso offline), ir directamente a jugadores
                 navigateToPlayers();
             } else {
                 // Si no hay configuración, ir a configuración
@@ -112,8 +112,8 @@
         const existingConfig = window.gameStorage.getConfig();
         const startButton = document.getElementById('start-game');
         
-        if (existingConfig && existingConfig.apiKey) {
-            // Si hay configuración, cambiar el texto del botón
+        if (existingConfig) {
+            // Si hay configuración (incluso offline), cambiar el texto del botón
             if (startButton) {
                 const buttonText = startButton.querySelector('.btn-icon');
                 if (buttonText) {

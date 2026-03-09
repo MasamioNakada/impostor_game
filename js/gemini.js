@@ -61,7 +61,8 @@
          */
         async generateKeyword(theme = null) {
             if (!this.apiKey) {
-                throw new Error('API key no configurada');
+                console.log('Modo offline: usando palabra de respaldo');
+                return this.getFallbackWord(theme);
             }
 
             try {
@@ -87,7 +88,8 @@
          */
         async generateHint(keyword, theme = null) {
             if (!this.apiKey) {
-                throw new Error('API key no configurada');
+                console.log('Modo offline: usando pista de respaldo');
+                return this.getFallbackHint(keyword, theme);
             }
 
             try {
@@ -370,7 +372,8 @@
          */
         async validateApiKey() {
             if (!this.apiKey) {
-                return false;
+                // En modo offline, no validamos la key, pero retornamos true para no bloquear
+                return true; 
             }
 
             try {

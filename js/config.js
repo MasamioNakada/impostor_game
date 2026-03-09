@@ -138,10 +138,15 @@
         
         // Validar API key
         if (!validateApiKey()) {
-            submitButton.disabled = false;
-            submitButton.innerHTML = originalText;
-            configState.isValidating = false;
-            return;
+            // Si no hay API key, confirmar que se usará el modo offline
+            if (!configState.apiKey) {
+                // Modo offline permitido
+            } else {
+                submitButton.disabled = false;
+                submitButton.innerHTML = originalText;
+                configState.isValidating = false;
+                return;
+            }
         }
         
         // Guardar configuración
@@ -153,7 +158,8 @@
         const saved = window.gameStorage.saveConfig(config);
         
         if (saved) {
-            showSuccess('Configuración guardada exitosamente');
+            const mode = configState.apiKey ? 'con API' : 'offline';
+            showSuccess(`Configuración guardada exitosamente (${mode})`);
             
             // Navegar a la página de jugadores después de un breve delay
             setTimeout(() => {
@@ -237,7 +243,7 @@
      */
     function validateApiKey() {
         if (!configState.apiKey) {
-            showError('Por favor, ingresa tu API key de Google Gemini.');
+            // Permitir vacío para modo offline
             return false;
         }
         

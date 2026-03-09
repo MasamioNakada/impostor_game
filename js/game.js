@@ -24,6 +24,14 @@
         isGenerating: false
     };
 
+    let touchState = {
+        startX: 0,
+        startY: 0,
+        endX: 0,
+        endY: 0,
+        startTime: 0
+    };
+
     // Verificar que el DOM esté listo
     function ready(fn) {
         if (document.readyState !== 'loading') {
@@ -74,7 +82,9 @@
 
         if (revealArea) {
             revealArea.addEventListener('click', handleRevealClick);
-            revealArea.addEventListener('touchstart', handleRevealTouch);
+            revealArea.addEventListener('touchstart', onTouchStart, { passive: true });
+            revealArea.addEventListener('touchmove', onTouchMove, { passive: true });
+            revealArea.addEventListener('touchend', onTouchEnd);
         }
 
         if (nextPlayerButton) {
@@ -139,11 +149,11 @@
                 return false;
             }
 
-            if (!storedConfig || !storedConfig.apiKey) {
+            if (!storedConfig) {
                 return false;
             }
 
-            // Configurar la API key
+            // Configurar la API key (puede ser null para modo offline)
             window.geminiAPI.setApiKey(storedConfig.apiKey);
 
             // Cargar estado
@@ -252,33 +262,85 @@
         handleReveal();
     }
 
-    /**
-     * Maneja el touch en el área de revelación
-     * @param {Event} event - Evento del touch
-     */
-    function handleRevealTouch(event) {
-        event.preventDefault();
-        handleReveal();
+    function onTouchStart(e) {
+        const t = e.changedTouches[0];
+        touchState.startX = t.clientX;
+        touchState.startY = t.clientY;
+        touchState.startTime = Date.now();
+    }
+
+    function onTouchMove(e) {
+        const t = e.changedTouches[0];
+        touchState.endX = t.clientX;
+        touchState.endY = t.clientY;
+    }
+
+    function onTouchEnd(e) {
+        const t = e.changedTouches[0];
+        touchState.endX = t.clientX || touchState.startX;
+        touchState.endY = t.clientY || touchState.startY;
+        const dx = touchState.endX - touchState.startX;
+        const dy = touchState.endY - touchState.startY;
+        const dt = Date.now() - touchState.startTime;
+        const isTap = Math.abs(dx) < 10 && Math.abs(dy) < 10 && dt < 300;
+        const isSwipeLeft = dx < -60 && Math.abs(dy) < 40;
+        if (isTap) {
+            handleReveal();
+            return;
+        }
+        if (isSwipeLeft) {
+            if (uiState.isRevealed) {
+                showError('Cierra la tarjeta para pasar al siguiente jugador');
+            } else {
+                swipeToNextPlayer();
+            }
+        }
     }
 
     /**
      * Maneja la revelación del rol del jugador actual
      */
     function handleReveal() {
-        if (uiState.isRevealed || gameState.allPlayersRevealed) {
+        if (gameState.allPlayersRevealed) return;
+        if (uiState.isRevealed) {
+            hideRevealedContent();
             return;
         }
-
-        // Marcar jugador actual como revelado
         gameState.revealedPlayers.add(gameState.currentPlayerIndex);
-
-        // Mostrar contenido revelado
         showRevealedContent();
-
         uiState.isRevealed = true;
 
-        // Guardar estado
+        // Deshabilitar botón siguiente mientras está revelado
+        const nextPlayerButton = document.getElementById('next-player');
+        if (nextPlayerButton) {
+            nextPlayerButton.disabled = true;
+            nextPlayerButton.classList.remove('enhanced-pulse');
+        }
+
         saveGameState();
+    }
+
+    function hideRevealedContent() {
+        const revealContent = document.getElementById('reveal-content');
+        const tapToReveal = document.getElementById('tap-to-reveal');
+        const nextPlayerButton = document.getElementById('next-player');
+        if (!revealContent || !tapToReveal) return;
+        revealContent.classList.remove('reveal-animation');
+        revealContent.classList.add('hide-animation');
+        setTimeout(() => {
+            revealContent.classList.add('hidden');
+            revealContent.classList.remove('hide-animation');
+            tapToReveal.classList.remove('hidden');
+            tapToReveal.style.opacity = '1';
+            
+            // Habilitar botón y mostrar indicación visual de que se puede avanzar
+            if (nextPlayerButton) {
+                nextPlayerButton.disabled = false;
+                nextPlayerButton.classList.add('enhanced-pulse');
+            }
+            
+            uiState.isRevealed = false;
+        }, 300);
     }
 
     /**
@@ -324,7 +386,8 @@
         // Habilitar botón de siguiente jugador
         if (nextPlayerButton) {
             nextPlayerButton.disabled = false;
-            nextPlayerButton.classList.add('enhanced-pulse');
+            // No agregamos enhanced-pulse hasta que se cierre la tarjeta
+            // nextPlayerButton.classList.add('enhanced-pulse');
         }
     }
 
@@ -335,26 +398,41 @@
     function handleNextPlayer(event) {
         event.preventDefault();
 
-        if (!uiState.isRevealed) return;
+        if (uiState.isRevealed) {
+            showError('Cierra la tarjeta para pasar al siguiente jugador');
+            return;
+        }
+        advanceToNextPlayer();
+    }
 
-        // Avanzar al siguiente jugador
+    function advanceToNextPlayer() {
         gameState.currentPlayerIndex++;
-
-        // Verificar si todos los jugadores han sido revelados
         if (gameState.currentPlayerIndex >= gameState.players.length) {
             gameState.allPlayersRevealed = true;
             showGameComplete();
             return;
         }
-
-        // Resetear estado de revelación
         uiState.isRevealed = false;
-
-        // Actualizar UI
         updateUI();
-
-        // Guardar estado
         saveGameState();
+    }
+
+    function swipeToNextPlayer() {
+        const revealArea = document.getElementById('reveal-area');
+        if (!revealArea) {
+            advanceToNextPlayer();
+            return;
+        }
+        revealArea.classList.add('swipe-left-out');
+        revealArea.addEventListener('animationend', function handler() {
+            revealArea.removeEventListener('animationend', handler);
+            revealArea.classList.remove('swipe-left-out');
+            advanceToNextPlayer();
+            revealArea.classList.add('swipe-left-in');
+            setTimeout(() => {
+                revealArea.classList.remove('swipe-left-in');
+            }, 250);
+        });
     }
 
     /**
@@ -555,8 +633,13 @@
         const nextPlayerButton = document.getElementById('next-player');
         const showResultsButton = document.getElementById('show-results');
 
-        if (nextPlayerButton) {
-            nextPlayerButton.disabled = !uiState.isRevealed;
+        // Verificar si el jugador actual ya ha sido revelado para habilitar el botón
+        if (gameState.revealedPlayers.has(gameState.currentPlayerIndex) && !uiState.isRevealed) {
+            nextPlayerButton.disabled = false;
+            nextPlayerButton.classList.add('enhanced-pulse');
+        } else {
+            nextPlayerButton.disabled = true;
+            nextPlayerButton.classList.remove('enhanced-pulse');
         }
 
         if (showResultsButton) {

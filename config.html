@@ -8,6 +8,9 @@
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/responsive.css">
     <link rel="stylesheet" href="css/animations.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
     <link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg">
 </head>
 <body>
@@ -38,12 +41,11 @@
                             type="password" 
                             id="api-key" 
                             class="form-input" 
-                            placeholder="Ingresa tu clave de API"
-                            required
+                            placeholder="Ingresa tu clave de API (opcional)"
                             autocomplete="off"
                         >
                         <div class="input-help">
-                            <p>💡 Obtén tu API key en: <a href="https://makersuite.google.com/app/apikey" target="_blank" rel="noopener">Google AI Studio</a></p>
+                            <p>💡 Obtén tu API key en: <a href="https://makersuite.google.com/app/apikey" target="_blank" rel="noopener">Google AI Studio</a>. Si la dejas vacía, se usarán palabras internas.</p>
                         </div>
                         <div id="api-error" class="error-message"></div>
                     </div>
