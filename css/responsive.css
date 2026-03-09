@@ -1,0 +1,441 @@
+/* ===== iOS SPECIFIC STYLES ===== */
+
+/* Optimización para dispositivos iOS */
+@supports (-webkit-touch-callout: none) {
+    /* iOS Safari specific styles */
+    body {
+        -webkit-text-size-adjust: none;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+    
+    /* Prevenir zoom en inputs */
+    input, textarea, select {
+        font-size: 16px !important;
+    }
+    
+    /* Mejorar rendimiento de animaciones */
+    .card, .btn, .reveal-area {
+        -webkit-transform: translateZ(0);
+        transform: translateZ(0);
+        -webkit-backface-visibility: hidden;
+        backface-visibility: hidden;
+        -webkit-perspective: 1000px;
+        perspective: 1000px;
+    }
+}
+
+/* ===== iPHONE SPECIFIC ===== */
+
+/* iPhone SE, 8, X, 11, 12, 13, 14 */
+@media only screen and (max-device-width: 414px) and (-webkit-min-device-pixel-ratio: 2) {
+    /* Ajustar espaciado para notch */
+    .container {
+        padding-top: calc(env(safe-area-inset-top) + 20px);
+        padding-bottom: calc(env(safe-area-inset-bottom) + 20px);
+    }
+    
+    /* Optimizar botones para touch */
+    .btn {
+        min-height: 50px;
+        font-size: 17px;
+        padding: 12px 24px;
+    }
+    
+    /* Agrandar áreas táctiles */
+    .tap-to-reveal {
+        padding: 32px 24px;
+        min-height: 300px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    .tap-icon {
+        font-size: 80px;
+        margin-bottom: 24px;
+    }
+    
+    /* Ajustar tipografía para mejor legibilidad */
+    .hero-section h1 {
+        font-size: 36px;
+        line-height: 1.2;
+    }
+    
+    .subtitle {
+        font-size: 20px;
+    }
+    
+    /* Optimizar inputs para iOS */
+    .form-input {
+        padding: 16px;
+        font-size: 17px;
+        border-radius: 10px;
+    }
+    
+    .player-input {
+        padding: 16px;
+        font-size: 17px;
+        border-radius: 10px;
+    }
+}
+
+/* iPhone Plus models */
+@media only screen and (min-device-width: 414px) and (max-device-width: 428px) and (-webkit-min-device-pixel-ratio: 3) {
+    .container {
+        max-width: 428px;
+    }
+    
+    .hero-section {
+        padding: 60px 0;
+    }
+    
+    .logo {
+        font-size: 72px;
+    }
+    
+    .tap-to-reveal {
+        min-height: 350px;
+    }
+}
+
+/* iPhone 14 Pro, Pro Max */
+@media only screen and (min-device-width: 393px) and (max-device-width: 430px) and (-webkit-min-device-pixel-ratio: 3) {
+    .container {
+        padding-top: calc(env(safe-area-inset-top) + 25px);
+    }
+    
+    .hero-section {
+        padding: 70px 0;
+    }
+    
+    .tap-icon {
+        font-size: 90px;
+    }
+}
+
+/* ===== iPAD SPECIFIC ===== */
+
+/* iPad Mini, iPad */
+@media only screen and (min-device-width: 768px) and (max-device-width: 1024px) and (-webkit-min-device-pixel-ratio: 2) {
+    .container {
+        max-width: 768px;
+        padding: 40px;
+    }
+    
+    .hero-section {
+        padding: 80px 0;
+    }
+    
+    .logo {
+        font-size: 96px;
+    }
+    
+    .hero-section h1 {
+        font-size: 48px;
+    }
+    
+    .subtitle {
+        font-size: 24px;
+    }
+    
+    .tap-to-reveal {
+        min-height: 400px;
+        padding: 48px;
+    }
+    
+    .tap-icon {
+        font-size: 120px;
+    }
+    
+    .tap-title {
+        font-size: 32px;
+    }
+    
+    .tap-subtitle {
+        font-size: 20px;
+    }
+    
+    /* Optimizar para orientación horizontal */
+    @media (orientation: landscape) {
+        .container {
+            max-width: 1024px;
+            padding: 30px 60px;
+        }
+        
+        .hero-section {
+            padding: 60px 0;
+        }
+        
+        .tap-to-reveal {
+            min-height: 300px;
+        }
+    }
+}
+
+/* iPad Pro */
+@media only screen and (min-device-width: 1024px) and (max-device-width: 1366px) and (-webkit-min-device-pixel-ratio: 2) {
+    .container {
+        max-width: 1024px;
+        padding: 60px;
+    }
+    
+    .hero-section {
+        padding: 100px 0;
+    }
+    
+    .logo {
+        font-size: 120px;
+    }
+    
+    .hero-section h1 {
+        font-size: 56px;
+    }
+    
+    .subtitle {
+        font-size: 28px;
+    }
+    
+    .tap-to-reveal {
+        min-height: 500px;
+        padding: 60px;
+    }
+    
+    .tap-icon {
+        font-size: 140px;
+    }
+    
+    .tap-title {
+        font-size: 36px;
+    }
+    
+    .tap-subtitle {
+        font-size: 24px;
+    }
+    
+    /* Orientación horizontal */
+    @media (orientation: landscape) {
+        .container {
+            max-width: 1366px;
+            padding: 40px 80px;
+        }
+        
+        .tap-to-reveal {
+            min-height: 400px;
+        }
+    }
+}
+
+/* ===== ORIENTATION SPECIFIC ===== */
+
+/* Portrait optimization */
+@media (orientation: portrait) {
+    .reveal-area {
+        min-height: 50vh;
+    }
+    
+    .tap-to-reveal {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+    }
+}
+
+/* Landscape optimization */
+@media (orientation: landscape) {
+    .container {
+        padding-top: calc(env(safe-area-inset-top) + 10px);
+        padding-bottom: calc(env(safe-area-inset-bottom) + 10px);
+    }
+    
+    .hero-section {
+        padding: 40px 0;
+    }
+    
+    .tap-to-reveal {
+        min-height: 40vh;
+        flex-direction: row;
+        gap: 40px;
+        text-align: left;
+    }
+    
+    .tap-icon {
+        margin-bottom: 0;
+        margin-right: 20px;
+    }
+    
+    .reveal-area {
+        min-height: 40vh;
+    }
+    
+    /* Ajustar layout para landscape */
+    .game-main {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        min-height: 60vh;
+    }
+}
+
+/* ===== TOUCH OPTIMIZATION ===== */
+
+/* Mejorar responsividad táctil */
+@media (hover: none) and (pointer: coarse) {
+    /* Aumentar áreas táctiles mínimas */
+    .btn {
+        min-height: 50px;
+        min-width: 100px;
+    }
+    
+    .form-input,
+    .player-input {
+        min-height: 50px;
+    }
+    
+    .remove-player {
+        min-height: 44px;
+        min-width: 44px;
+    }
+    
+    /* Eliminar hover effects en dispositivos táctiles */
+    .btn:hover:not(:disabled) {
+        transform: none;
+    }
+    
+    .card:hover {
+        transform: none;
+    }
+    
+    /* Agregar feedback táctil visual */
+    .btn:active:not(:disabled) {
+        transform: scale(0.98);
+        background: var(--primary-dark);
+    }
+    
+    .reveal-area:active {
+        transform: scale(0.98);
+    }
+}
+
+/* ===== HIGH DPI DISPLAYS ===== */
+
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    /* Optimizar para pantallas de alta densidad */
+    .card {
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+    }
+    
+    .btn {
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    /* Mejorar nitidez de bordes */
+    .form-input,
+    .player-input {
+        border-width: 1px;
+    }
+}
+
+/* ===== DARK MODE SUPPORT ===== */
+
+@media (prefers-color-scheme: dark) {
+    /* No aplicar dark mode ya que el diseño ya es oscuro */
+    /* Pero podemos ajustar algunos elementos si es necesario */
+}
+
+/* ===== REDUCED MOTION ===== */
+
+@media (prefers-reduced-motion: reduce) {
+    /* Desactivar animaciones complejas */
+    .tap-icon {
+        animation: none;
+    }
+    
+    .tap-pulse {
+        animation: none;
+    }
+    
+    .logo {
+        animation: none;
+    }
+    
+    .reveal-area {
+        transition: none;
+    }
+}
+
+/* ===== SAFARI SPECIFIC FIXES ===== */
+
+/* Fix para el problema de 100vh en iOS Safari */
+@supports (-webkit-appearance: none) {
+    .container {
+        min-height: -webkit-fill-available;
+    }
+    
+    .reveal-area {
+        min-height: 50vh;
+        min-height: -webkit-fill-available;
+    }
+}
+
+/* ===== CHROME iOS FIXES ===== */
+
+/* Fix para Chrome en iOS */
+@supports (-webkit-touch-callout: none) {
+    /* Prevenir selección de texto no deseada */
+    .tap-to-reveal,
+    .btn,
+    .reveal-area {
+        -webkit-user-select: none;
+        user-select: none;
+        -webkit-touch-callout: none;
+    }
+    
+    /* Mejorar rendimiento de scroll */
+    .container {
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+/* ===== ACCESSIBILITY IMPROVEMENTS ===== */
+
+/* Mejorar contraste para accesibilidad */
+@media (prefers-contrast: high) {
+    .form-input,
+    .player-input {
+        border-width: 2px;
+        border-color: var(--primary-dark);
+    }
+    
+    .btn {
+        border: 2px solid transparent;
+    }
+    
+    .btn-primary {
+        border-color: var(--white);
+    }
+}
+
+/* ===== SAFE AREA INSET SUPPORT ===== */
+
+/* Soporte completo para notch y bordes redondeados */
+@supports (padding: env(safe-area-inset-top)) {
+    .container {
+        padding-left: max(var(--spacing-md), env(safe-area-inset-left));
+        padding-right: max(var(--spacing-md), env(safe-area-inset-right));
+        padding-top: max(var(--spacing-md), env(safe-area-inset-top));
+        padding-bottom: max(var(--spacing-md), env(safe-area-inset-bottom));
+    }
+    
+    .page-header,
+    .game-header {
+        padding-top: env(safe-area-inset-top);
+    }
+    
+    .action-section {
+        padding-bottom: calc(env(safe-area-inset-bottom) + var(--spacing-xl));
+    }
+}

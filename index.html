@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>🕵️ El Impostor - Juego de Adivinanza</title>
+    <meta name="description" content="Juego social donde un impostor debe descubrir la palabra secreta mientras los demás intentan identificarlo">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="css/animations.css">
+    <link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg">
+</head>
+<body>
+    <div class="container">
+        <header class="hero-section">
+            <div class="logo">🕵️</div>
+            <h1>El Impostor</h1>
+            <p class="subtitle">Juego de adivinanza social para amigos</p>
+        </header>
+
+        <main class="content-section">
+            <div class="card">
+                <h2>📋 Instrucciones del Juego</h2>
+                <ol class="instructions-list">
+                    <li>
+                        <span class="emoji">🔑</span>
+                        <div>
+                            <strong>Configura tu API key</strong>
+                            <p>Necesitarás una API key de Google Gemini para generar las palabras</p>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="emoji">👥</span>
+                        <div>
+                            <strong>Registra a los jugadores</strong>
+                            <p>Mínimo 3 participantes, ingresa los nombres en orden horario</p>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="emoji">🎯</span>
+                        <div>
+                            <strong>Revela tu rol</strong>
+                            <p>Cada jugador toca la pantalla para ver si es el impostor o conoce la palabra</p>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="emoji">💬</span>
+                        <div>
+                            <strong>Comienza la discusión</strong>
+                            <p>El impostor debe descubrir la palabra, los demás deben identificar al impostor</p>
+                        </div>
+                    </li>
+                </ol>
+            </div>
+
+            <div class="card rules-card">
+                <h3>📖 Reglas del Juego</h3>
+                <ul class="rules-list">
+                    <li>🏆 Ganan los jugadores normales si identifican al impostor</li>
+                    <li>🕵️ Gana el impostor si adivina la palabra secreta</li>
+                    <li>⏰ Tienen 5-10 minutos para discutir y votar</li>
+                    <li>🗣️ Cada jugador puede hacer preguntas y dar pistas</li>
+                </ul>
+            </div>
+        </main>
+
+        <footer class="action-section">
+            <button id="start-game" class="btn btn-primary">
+                <span class="btn-icon">🚀</span>
+                Comenzar Juego
+            </button>
+        </footer>
+    </div>
+
+    <script src="js/storage.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

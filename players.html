@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>👥 Jugadores - El Impostor</title>
+    <meta name="description" content="Registra a los participantes del juego">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="css/animations.css">
+    <link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg">
+</head>
+<body>
+    <div class="container">
+        <header class="page-header">
+            <button id="back-btn" class="btn btn-secondary">
+                <span class="btn-icon">←</span>
+                Atrás
+            </button>
+            <h1>Registro de Jugadores</h1>
+        </header>
+
+        <main class="content-section">
+            <div class="card">
+                <div class="form-header">
+                    <span class="emoji">👥</span>
+                    <h2>Ingresa los nombres</h2>
+                    <p>Registra a los jugadores en orden horario (mínimo 3 participantes)</p>
+                </div>
+
+                <div id="player-counter" class="player-counter">
+                    <span class="counter-label">Jugadores registrados:</span>
+                    <span id="player-count" class="counter-number">0</span>
+                    <span class="counter-min">/ 3 mínimo</span>
+                </div>
+
+                <form id="players-form" class="players-form">
+                    <div id="players-list" class="players-list">
+                        <!-- Los campos de jugadores se generarán dinámicamente -->
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" id="add-player" class="btn btn-secondary">
+                            <span class="btn-icon">➕</span>
+                            Agregar Jugador
+                        </button>
+                        <button type="submit" id="start-game-btn" class="btn btn-primary" disabled>
+                            <span class="btn-icon">🎮</span>
+                            Iniciar Juego
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="card tips-card">
+                <h3>💡 Consejos</h3>
+                <ul class="tips-list">
+                    <li>🔄 Los jugadores pasarán el dispositivo en el orden que los registres</li>
+                    <li>👀 Asegúrate de que todos puedan ver la pantalla cuando les toque</li>
+                    <li>🤫 Mantén el secreto de tu rol durante la discusión</li>
+                    <li>⏰ Tienen 5-10 minutos para discutir y votar</li>
+                </ul>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/storage.js"></script>
+    <script src="js/players.js"></script>
+</body>
+</html>

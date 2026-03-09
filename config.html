@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>🔧 Configuración - El Impostor</title>
+    <meta name="description" content="Configura tu API key de Google Gemini para comenzar a jugar">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="css/animations.css">
+    <link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg">
+</head>
+<body>
+    <div class="container">
+        <header class="page-header">
+            <button id="back-btn" class="btn btn-secondary">
+                <span class="btn-icon">←</span>
+                Atrás
+            </button>
+            <h1>Configuración Inicial</h1>
+        </header>
+
+        <main class="content-section">
+            <div class="card">
+                <div class="form-header">
+                    <span class="emoji">🔑</span>
+                    <h2>Configura tu API key</h2>
+                    <p>Necesitarás una API key de Google Gemini para generar las palabras del juego</p>
+                </div>
+
+                <form id="config-form" class="config-form">
+                    <div class="form-group">
+                        <label for="api-key" class="form-label">
+                            <span class="label-icon">🔐</span>
+                            API Key de Google Gemini
+                        </label>
+                        <input 
+                            type="password" 
+                            id="api-key" 
+                            class="form-input" 
+                            placeholder="Ingresa tu clave de API"
+                            required
+                            autocomplete="off"
+                        >
+                        <div class="input-help">
+                            <p>💡 Obtén tu API key en: <a href="https://makersuite.google.com/app/apikey" target="_blank" rel="noopener">Google AI Studio</a></p>
+                        </div>
+                        <div id="api-error" class="error-message"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="theme" class="form-label">
+                            <span class="label-icon">🎨</span>
+                            Tema (opcional)
+                        </label>
+                        <input 
+                            type="text" 
+                            id="theme" 
+                            class="form-input" 
+                            placeholder="Ej: Animales, Países, Comida..."
+                            autocomplete="off"
+                        >
+                        <div class="input-help">
+                            <p>📝 Si no ingresas un tema, se generará una palabra aleatoria</p>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <span class="btn-icon">✅</span>
+                            Confirmar Configuración
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="card info-card">
+                <h3>ℹ️ Información Importante</h3>
+                <ul class="info-list">
+                    <li>🔒 Tu API key se almacena solo durante esta sesión</li>
+                    <li>🎯 El tema ayuda a generar palabras más específicas</li>
+                    <li>⚡ La generación de palabras es instantánea</li>
+                    <li>🎮 Puedes jugar sin conexión después de configurar</li>
+                </ul>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/storage.js"></script>
+    <script src="js/config.js"></script>
+</body>
+</html>

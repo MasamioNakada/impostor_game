@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>🎮 Juego - El Impostor</title>
+    <meta name="description" content="Interfaz de revelación de roles para el juego">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="css/animations.css">
+    <link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg">
+</head>
+<body>
+    <div class="container">
+        <header class="game-header">
+            <div class="game-info">
+                <span id="current-player-number" class="player-number">Jugador 1</span>
+                <span id="total-players" class="total-players">de X</span>
+            </div>
+            <button id="reset-game" class="btn btn-danger">
+                <span class="btn-icon">🔄</span>
+                Reiniciar
+            </button>
+        </header>
+
+        <main class="game-main">
+            <div class="reveal-area" id="reveal-area">
+                <div class="reveal-content hidden" id="reveal-content">
+                    <!-- El contenido se generará dinámicamente -->
+                </div>
+                
+                <div class="tap-to-reveal" id="tap-to-reveal">
+                    <div class="tap-icon">👆</div>
+                    <h2 class="tap-title" id="player-name">Nombre del Jugador</h2>
+                    <p class="tap-subtitle">Toca la pantalla para revelar tu rol</p>
+                    <div class="tap-pulse"></div>
+                </div>
+            </div>
+
+            <div class="game-actions">
+                <button id="next-player" class="btn btn-primary" disabled>
+                    <span class="btn-icon">➡️</span>
+                    Siguiente Jugador
+                </button>
+                <button id="show-results" class="btn btn-success hidden">
+                    <span class="btn-icon">🏁</span>
+                    Ver Resultados
+                </button>
+            </div>
+        </main>
+
+        <div id="game-complete" class="game-complete hidden">
+            <div class="complete-card">
+                <div class="complete-icon">🎉</div>
+                <h2>¡Juego Completado!</h2>
+                <p>Todos los jugadores han revelado sus roles</p>
+                <div class="complete-actions">
+                    <button id="start-discussion" class="btn btn-primary">
+                        <span class="btn-icon">💬</span>
+                        Comenzar Discusión
+                    </button>
+                    <button id="new-game" class="btn btn-secondary">
+                        <span class="btn-icon">🔄</span>
+                        Nuevo Juego
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="results-modal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>📋 Resumen del Juego</h3>
+                    <button id="close-modal" class="modal-close">×</button>
+                </div>
+                <div class="modal-body">
+                    <div class="results-summary">
+                        <div class="result-item">
+                            <span class="result-label">🎯 Palabra secreta:</span>
+                            <span id="result-keyword" class="result-value"></span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">🕵️ Impostor:</span>
+                            <span id="result-impostor" class="result-value"></span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">💡 Pista para el impostor:</span>
+                            <span id="result-hint" class="result-value"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="continue-discussion" class="btn btn-primary">
+                        <span class="btn-icon">💬</span>
+                        Continuar con la discusión
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/storage.js"></script>
+    <script src="js/gemini.js"></script>
+    <script src="js/game.js"></script>
+</body>
+</html>
