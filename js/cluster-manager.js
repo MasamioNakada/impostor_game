@@ -13,6 +13,7 @@ class ClusterManager {
         this.callbacks = {};
         this._initProvidedId = false;
         this._initAttempts = 0;
+        this._lastInitId = null;
     }
 
     /**
@@ -32,6 +33,7 @@ class ClusterManager {
 
     _initPeer(id = null) {
         const peerId = this._initProvidedId ? id : this.generateShortId();
+        this._lastInitId = peerId;
 
         if (this.peer) {
             try {
@@ -71,6 +73,34 @@ class ClusterManager {
         });
     }
 
+    _waitForReady(timeoutMs = 8000) {
+        return new Promise((resolve, reject) => {
+            if (this.myId) {
+                resolve(this.myId);
+                return;
+            }
+
+            const timer = setTimeout(() => {
+                cleanup();
+                reject(new Error('Timeout esperando Peer open'));
+            }, timeoutMs);
+
+            const onReady = (id) => {
+                cleanup();
+                resolve(id);
+            };
+
+            const cleanup = () => {
+                clearTimeout(timer);
+                const arr = this.callbacks['ready'];
+                if (!arr) return;
+                this.callbacks['ready'] = arr.filter(cb => cb !== onReady);
+            };
+
+            this.on('ready', onReady);
+        });
+    }
+
     /**
      * Genera un ID corto aleatorio (4 caracteres)
      */
@@ -84,29 +114,66 @@ class ClusterManager {
      */
     connectToHost(hostId) {
         console.log('Conectando a host:', hostId);
-        const conn = this.peer.connect(hostId);
+
+        if (!this.peer) {
+            this.init(this._lastInitId);
+        }
+
+        if (this.peer && this.peer.disconnected && !this.peer.destroyed) {
+            try {
+                this.peer.reconnect();
+            } catch (e) {
+            }
+        }
+
+        const doConnect = async () => {
+            try {
+                await this._waitForReady(8000);
+            } catch (e) {
+                this.emit('error', e);
+                return;
+            }
+
+            if (!this.peer || this.peer.destroyed) {
+                this.emit('error', new Error('Peer no disponible'));
+                return;
+            }
+
+            if (this.hostConn) {
+                try {
+                    this.hostConn.close();
+                } catch (e) {
+                }
+                this.hostConn = null;
+            }
+
+            const conn = this.peer.connect(hostId);
         
-        conn.on('open', () => {
-            console.log('Conexión abierta con Host');
-            this.hostConn = conn;
-            this.emit('connected', hostId);
-            
-            // Configurar recepción de datos
-            conn.on('data', (data) => {
-                this.handleData(data, conn);
+            conn.on('open', () => {
+                console.log('Conexión abierta con Host');
+                this.hostConn = conn;
+                this.emit('connected', hostId);
+
+                conn.on('data', (data) => {
+                    this.handleData(data, conn);
+                });
             });
-        });
-        
-        conn.on('close', () => {
-            console.log('Conexión cerrada por Host');
-            this.emit('disconnected');
-            this.hostConn = null;
-        });
-        
-        conn.on('error', (err) => {
-            console.error('Error de conexión:', err);
-            this.emit('error', err);
-        });
+
+            conn.on('close', () => {
+                console.log('Conexión cerrada por Host');
+                this.emit('disconnected');
+                if (this.hostConn === conn) {
+                    this.hostConn = null;
+                }
+            });
+
+            conn.on('error', (err) => {
+                console.error('Error de conexión:', err);
+                this.emit('error', err);
+            });
+        };
+
+        doConnect();
     }
 
     /**

@@ -68,6 +68,26 @@
             color: var(--neon-cyan);
             word-break: break-all;
         }
+
+        #players-list li,
+        #players-list-game li {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        #players-list li::before,
+        #players-list-game li::before {
+            top: 8px;
+        }
+
+        .player-code {
+            font-family: var(--font-heading);
+            color: var(--neon-yellow);
+            letter-spacing: 2px;
+            white-space: nowrap;
+        }
     </style>
 </head>
 <body>
@@ -111,6 +131,11 @@
                         <a id="room-join-link" class="room-join-link" href="#" target="_blank" rel="noopener noreferrer"></a>
                     </div>
                 </div>
+
+                <div id="keep-awake-indicator" class="keep-awake-indicator">
+                    <div class="keep-awake-dot"></div>
+                    <div>Pantalla activa</div>
+                </div>
                 
                 <div class="players-list-container">
                     <h3>Jugadores (<span id="player-count">0</span>)</h3>
@@ -130,6 +155,43 @@
             <div id="game-controls" class="card hidden">
                 <h2>🎮 Control de Juego</h2>
                 <div id="game-status" class="status-display">Generando partida...</div>
+
+                <div id="host-game-view" class="card" style="margin: 0;">
+                    <h2 style="margin-top: 0;">🎮 En Juego</h2>
+
+                    <div id="host-reveal-phase" class="hidden">
+                        <p class="text-center" style="margin-bottom: 1rem;">Toca para ver tu rol</p>
+                        <div id="host-role-card" class="role-card">
+                            <h1 style="font-size: 4rem;">❓</h1>
+                            <p>TOCA AQUÍ</p>
+                        </div>
+
+                        <div id="host-role-info" class="hidden">
+                            <h2 id="host-role-title" class="role-title">...</h2>
+                            <div id="host-secret-word-container" class="hidden">
+                                <p>Palabra Secreta:</p>
+                                <div id="host-secret-word" class="keyword">...</div>
+                            </div>
+                            <p id="host-role-hint" class="hint">...</p>
+                        </div>
+                    </div>
+
+                    <div id="host-discussion-phase" class="hidden">
+                        <h3 class="text-center" style="color: var(--neon-yellow);">🗣️ DISCUSIÓN EN CURSO</h3>
+                        <p class="text-center">Descubran al impostor...</p>
+                    </div>
+
+                    <div id="host-voting-phase" class="hidden">
+                        <h3 class="text-center" style="color: var(--neon-red);">🗳️ VOTA AL IMPOSTOR</h3>
+                        <p class="text-center" style="margin-top: 0.5rem; color: #888;">Puedes forzar el cierre si falta alguien.</p>
+                    </div>
+
+                    <div id="host-results-phase" class="hidden">
+                        <h3 class="text-center" style="color: var(--neon-green);">🏆 RESULTADOS</h3>
+                        <div id="host-results-content" class="text-center"></div>
+                        <p class="text-center" style="margin-top: 1rem;">Esperando nueva partida...</p>
+                    </div>
+                </div>
                 
                 <div class="game-actions" style="flex-direction: column;">
                      <button id="reveal-my-role-btn" class="btn btn-secondary full-width">
@@ -146,12 +208,30 @@
                      </div>
 
                      <div id="host-controls" style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
+                        <div class="players-list-container" style="margin-top: 10px;">
+                            <h3>Jugadores (<span id="player-count-game">0</span>)</h3>
+                            <ul id="players-list-game" class="rules-list">
+                                <!-- Players will be added here dynamically -->
+                            </ul>
+                        </div>
+
                         <button id="start-discussion-btn" class="btn btn-primary full-width hidden">
                             <span class="btn-icon">🗣️</span> Iniciar Discusión
                         </button>
                         <button id="start-voting-btn" class="btn btn-warning full-width hidden">
                             <span class="btn-icon">🗳️</span> Iniciar Votación
                         </button>
+                        <button id="force-end-voting-btn" class="btn btn-danger full-width hidden">
+                            <span class="btn-icon">⏱️</span> Forzar fin de votación
+                        </button>
+
+                        <div id="force-voting-panel" class="card hidden" style="margin: 0;">
+                            <h3 class="text-center">Completar votos faltantes</h3>
+                            <div id="missing-votes-list" class="rules-list" style="margin-top: 0.5rem;"></div>
+                            <button id="finalize-forced-voting-btn" class="btn btn-success full-width" style="margin-top: 1rem;">
+                                <span class="btn-icon">✅</span> Cerrar votación y ver resultados
+                            </button>
+                        </div>
                         <button id="show-results-btn" class="btn btn-success full-width hidden">
                             <span class="btn-icon">🏆</span> Mostrar Resultados
                         </button>
@@ -188,6 +268,7 @@
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="js/keep-awake.js"></script>
     <script src="js/storage.js"></script>
     <script src="js/gemini.js"></script>
     <script src="js/cluster-manager.js"></script>

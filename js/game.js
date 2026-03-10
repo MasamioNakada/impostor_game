@@ -32,6 +32,16 @@
         startTime: 0
     };
 
+    const holdState = {
+        active: false,
+        complete: false,
+        startTime: 0,
+        rafId: null
+    };
+
+    const HOLD_REVEAL_MS = 700;
+    let ignoreClickUntil = 0;
+
     // Verificar que el DOM esté listo
     function ready(fn) {
         if (document.readyState !== 'loading') {
@@ -86,6 +96,7 @@
             revealArea.addEventListener('touchstart', onTouchStart, { passive: true });
             revealArea.addEventListener('touchmove', onTouchMove, { passive: true });
             revealArea.addEventListener('touchend', onTouchEnd);
+            revealArea.addEventListener('touchcancel', cancelHoldProgress);
         }
 
         if (nextPlayerButton) {
@@ -208,7 +219,7 @@
             await saveGameState();
 
             hideLoading();
-            showSuccess(`Palabra generada: ${gameState.keyword}`);
+            showSuccess('Partida generada');
 
         } catch (error) {
             console.error('Error al generar contenido del juego:', error);
@@ -265,6 +276,7 @@
      */
     function handleRevealClick(event) {
         event.preventDefault();
+        if (Date.now() < ignoreClickUntil) return;
         handleReveal();
     }
 
@@ -273,12 +285,23 @@
         touchState.startX = t.clientX;
         touchState.startY = t.clientY;
         touchState.startTime = Date.now();
+
+        if (gameState.allPlayersRevealed) return;
+        if (uiState.isRevealed) return;
+        startHoldProgress();
     }
 
     function onTouchMove(e) {
         const t = e.changedTouches[0];
         touchState.endX = t.clientX;
         touchState.endY = t.clientY;
+
+        if (!holdState.active) return;
+        const dx = touchState.endX - touchState.startX;
+        const dy = touchState.endY - touchState.startY;
+        if (Math.abs(dx) > 14 || Math.abs(dy) > 14) {
+            cancelHoldProgress();
+        }
     }
 
     function onTouchEnd(e) {
@@ -290,16 +313,67 @@
         const dt = Date.now() - touchState.startTime;
         const isTap = Math.abs(dx) < 10 && Math.abs(dy) < 10 && dt < 300;
         const isSwipeLeft = dx < -60 && Math.abs(dy) < 40;
-        if (isTap) {
+
+        ignoreClickUntil = Date.now() + 500;
+
+        if (uiState.isRevealed && isTap) {
             handleReveal();
             return;
         }
-        if (isSwipeLeft) {
-            if (uiState.isRevealed) {
-                showError('Cierra la tarjeta para pasar al siguiente jugador');
-            } else {
-                swipeToNextPlayer();
+
+        if (holdState.active) {
+            const shouldReveal = holdState.complete;
+            cancelHoldProgress();
+            if (shouldReveal) {
+                handleReveal();
+                return;
             }
+        }
+
+        if (isSwipeLeft) {
+            swipeToNextPlayer();
+        }
+    }
+
+    function startHoldProgress() {
+        const revealArea = document.getElementById('reveal-area');
+        if (!revealArea) return;
+
+        holdState.active = true;
+        holdState.complete = false;
+        holdState.startTime = Date.now();
+        revealArea.classList.add('hold-active');
+        revealArea.classList.remove('hold-ready');
+        revealArea.style.setProperty('--hold-progress', '0');
+
+        const tick = () => {
+            if (!holdState.active) return;
+            const elapsed = Date.now() - holdState.startTime;
+            const progress = Math.min(elapsed / HOLD_REVEAL_MS, 1);
+            revealArea.style.setProperty('--hold-progress', String(progress));
+            if (progress >= 1) {
+                holdState.complete = true;
+                revealArea.classList.add('hold-ready');
+            }
+            holdState.rafId = requestAnimationFrame(tick);
+        };
+
+        holdState.rafId = requestAnimationFrame(tick);
+    }
+
+    function cancelHoldProgress() {
+        const revealArea = document.getElementById('reveal-area');
+        holdState.active = false;
+        holdState.complete = false;
+        holdState.startTime = 0;
+        if (holdState.rafId) {
+            cancelAnimationFrame(holdState.rafId);
+            holdState.rafId = null;
+        }
+        if (revealArea) {
+            revealArea.classList.remove('hold-active');
+            revealArea.classList.remove('hold-ready');
+            revealArea.style.setProperty('--hold-progress', '0');
         }
     }
 
@@ -403,11 +477,6 @@
      */
     function handleNextPlayer(event) {
         event.preventDefault();
-
-        if (uiState.isRevealed) {
-            showError('Cierra la tarjeta para pasar al siguiente jugador');
-            return;
-        }
         advanceToNextPlayer();
     }
 
@@ -424,6 +493,7 @@
     }
 
     function swipeToNextPlayer() {
+        cancelHoldProgress();
         const revealArea = document.getElementById('reveal-area');
         if (!revealArea) {
             advanceToNextPlayer();
@@ -447,17 +517,10 @@
      */
     function handleEndGameEarly(event) {
         event.preventDefault();
-        
-        if (confirm('¿Estás seguro de finalizar el juego ahora? Se revelarán los roles.')) {
-            // Marcar todos como revelados
-            gameState.allPlayersRevealed = true;
-            
-            // Mostrar pantalla de completado (que oculta las acciones del juego)
-            showGameComplete();
-            
-            // Mostrar el modal con los resultados inmediatamente
-            showResultsModal();
-        }
+
+        gameState.allPlayersRevealed = true;
+        showGameComplete();
+        showResultsModal();
     }
 
     /**
@@ -501,9 +564,7 @@
     function handleResetGame(event) {
         event.preventDefault();
 
-        if (confirm('¿Estás seguro de que quieres reiniciar el juego? Se perderá el progreso actual.')) {
-            resetGame();
-        }
+        resetGame();
     }
 
     /**
@@ -524,22 +585,17 @@
     function handleNewGame(event) {
         event.preventDefault();
 
-        if (confirm('¿Quieres comenzar un nuevo juego con los mismos jugadores?')) {
-            // Resetear el juego actual pero mantener jugadores
-            gameState.gameStarted = false;
-            gameState.currentPlayerIndex = 0;
-            gameState.allPlayersRevealed = false;
-            gameState.revealedPlayers.clear();
-            uiState.isRevealed = false;
+        gameState.gameStarted = false;
+        gameState.currentPlayerIndex = 0;
+        gameState.allPlayersRevealed = false;
+        gameState.revealedPlayers.clear();
+        uiState.isRevealed = false;
 
-            saveGameState();
-            
-            // Regenerar contenido
-            generateGameContent();
-            
-            // Volver a la pantalla de juego
-            location.reload();
-        }
+        saveGameState();
+
+        generateGameContent();
+
+        location.reload();
     }
 
     /**
@@ -624,7 +680,7 @@
 ¡Que comience la discusión! 💬
         `;
 
-        alert(instructions);
+        showResultsModal();
     }
 
     /**
@@ -645,6 +701,27 @@
         updatePlayerInfo();
         updateButtonsState();
         updateProgress();
+        syncRevealArea();
+    }
+
+    function syncRevealArea() {
+        const revealContent = document.getElementById('reveal-content');
+        const tapToReveal = document.getElementById('tap-to-reveal');
+        if (!revealContent || !tapToReveal) return;
+
+        if (uiState.isRevealed) {
+            tapToReveal.classList.add('hidden');
+            tapToReveal.style.opacity = '0';
+            revealContent.classList.remove('hidden');
+            return;
+        }
+
+        revealContent.classList.add('hidden');
+        revealContent.classList.remove('reveal-animation');
+        revealContent.classList.remove('hide-animation');
+        revealContent.innerHTML = '';
+        tapToReveal.classList.remove('hidden');
+        tapToReveal.style.opacity = '1';
     }
 
     /**
@@ -722,6 +799,11 @@
         if (revealArea) {
             // Restaurar contenido original
             revealArea.innerHTML = `
+                <div class="hold-progress" aria-hidden="true">
+                    <svg viewBox="0 0 100 100" preserveAspectRatio="none">
+                        <rect x="3" y="3" width="94" height="94" rx="8" ry="8"></rect>
+                    </svg>
+                </div>
                 <div class="reveal-content hidden" id="reveal-content">
                     <!-- El contenido se generará dinámicamente -->
                 </div>
@@ -729,7 +811,7 @@
                 <div class="tap-to-reveal" id="tap-to-reveal">
                     <div class="tap-icon">👆</div>
                     <h2 class="tap-title" id="player-name">Nombre del Jugador</h2>
-                    <p class="tap-subtitle">Toca la pantalla para revelar tu rol</p>
+                    <p class="tap-subtitle">Mantén presionado para revelar tu rol</p>
                     <div class="tap-pulse"></div>
                 </div>
             `;

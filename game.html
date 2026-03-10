@@ -28,6 +28,11 @@
 
         <main class="game-main">
             <div class="reveal-area" id="reveal-area">
+                <div class="hold-progress" aria-hidden="true">
+                    <svg viewBox="0 0 100 100" preserveAspectRatio="none">
+                        <rect x="3" y="3" width="94" height="94" rx="8" ry="8"></rect>
+                    </svg>
+                </div>
                 <div class="reveal-content hidden" id="reveal-content">
                     <!-- El contenido se generará dinámicamente -->
                 </div>
@@ -35,7 +40,7 @@
                 <div class="tap-to-reveal" id="tap-to-reveal">
                     <div class="tap-icon">👆</div>
                     <h2 class="tap-title" id="player-name">Nombre del Jugador</h2>
-                    <p class="tap-subtitle">Toca la pantalla para revelar tu rol</p>
+                    <p class="tap-subtitle">Mantén presionado para revelar tu rol</p>
                     <div class="tap-pulse"></div>
                 </div>
             </div>

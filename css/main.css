@@ -167,6 +167,44 @@ body::after {
     padding-top: var(--spacing-md);
 }
 
+.game-complete {
+    position: fixed;
+    inset: 0;
+    padding: calc(env(safe-area-inset-top) + var(--spacing-md)) calc(env(safe-area-inset-right) + var(--spacing-md)) calc(env(safe-area-inset-bottom) + var(--spacing-md)) calc(env(safe-area-inset-left) + var(--spacing-md));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(6px);
+}
+
+.complete-card {
+    width: min(520px, 100%);
+    border: 1px solid rgba(0, 243, 255, 0.2);
+    border-radius: var(--border-radius);
+    background: rgba(10, 10, 20, 0.85);
+    box-shadow: 0 0 25px rgba(0, 243, 255, 0.12);
+    padding: var(--spacing-lg);
+    text-align: center;
+}
+
+.complete-icon {
+    font-size: 44px;
+    margin-bottom: var(--spacing-sm);
+}
+
+.complete-card h2 {
+    margin-top: 0;
+}
+
+.complete-actions {
+    margin-top: var(--spacing-lg);
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+}
+
 .game-info {
     font-family: var(--font-heading);
     color: var(--neon-cyan);
@@ -461,6 +499,20 @@ body::after {
     box-shadow: 0 0 15px rgba(188, 19, 254, 0.5);
 }
 
+/* Botón Advertencia (Amarillo) */
+.btn-warning {
+    color: var(--neon-yellow);
+    border-color: var(--neon-yellow);
+    box-shadow: 0 0 10px rgba(255, 238, 0, 0.12), inset 0 0 10px rgba(255, 238, 0, 0.08);
+    text-shadow: 0 0 5px rgba(255, 238, 0, 0.65);
+}
+
+.btn-warning:hover:not(:disabled) {
+    background: var(--neon-yellow);
+    color: #000;
+    box-shadow: 0 0 20px rgba(255, 238, 0, 0.55);
+}
+
 .btn:disabled {
     opacity: 0.3;
     cursor: not-allowed;
@@ -471,6 +523,53 @@ body::after {
 .btn-icon {
     margin-right: 8px;
     font-size: 1.2em;
+}
+
+.keep-awake-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: var(--spacing-md);
+    padding: var(--spacing-sm);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: var(--border-radius);
+    background: rgba(0, 0, 0, 0.25);
+    font-family: var(--font-heading);
+    font-size: 12px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #888;
+}
+
+.keep-awake-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--neon-cyan);
+    box-shadow: 0 0 10px rgba(0, 243, 255, 0.6);
+    animation: keepAwakePulse 1.5s ease-in-out infinite;
+}
+
+.keep-awake-indicator[data-state="active"] {
+    color: var(--neon-cyan);
+    border-color: rgba(0, 243, 255, 0.25);
+}
+
+.keep-awake-indicator[data-state="unsupported"] {
+    color: #999;
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
+@keyframes keepAwakePulse {
+    0%, 100% {
+        transform: scale(0.85);
+        opacity: 0.5;
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 1;
+    }
 }
 
 /* ===== ACCIONES ===== */
@@ -594,6 +693,38 @@ body::after {
     /* Grid interior sutil */
     background-image: radial-gradient(rgba(0, 243, 255, 0.1) 1px, transparent 1px);
     background-size: 20px 20px;
+}
+
+.hold-progress {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 2;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+
+.reveal-area.hold-active .hold-progress {
+    opacity: 1;
+}
+
+.hold-progress svg {
+    width: 100%;
+    height: 100%;
+}
+
+.hold-progress rect {
+    fill: none;
+    stroke: rgba(0, 243, 255, 0.35);
+    stroke-width: 4;
+    stroke-linecap: round;
+    stroke-dasharray: 360;
+    stroke-dashoffset: calc(360 * (1 - var(--hold-progress, 0)));
+    transition: stroke 0.15s ease;
+}
+
+.reveal-area.hold-ready .hold-progress rect {
+    stroke: rgba(0, 255, 120, 0.85);
 }
 
 /* Esquinas decorativas para el área de revelación */
@@ -793,6 +924,61 @@ body::after {
     padding: var(--spacing-md);
     background: rgba(255, 255, 255, 0.03);
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.vote-bars {
+    margin-top: var(--spacing-lg);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.vote-bar-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 6px;
+    padding: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--border-radius);
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.vote-bar-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    color: #ccc;
+}
+
+.vote-bar-name {
+    font-family: var(--font-heading);
+    color: #fff;
+    letter-spacing: 1px;
+}
+
+.vote-bar-count {
+    font-family: var(--font-heading);
+    color: var(--neon-yellow);
+    letter-spacing: 1px;
+    white-space: nowrap;
+}
+
+.vote-bar-track {
+    width: 100%;
+    height: 10px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    overflow: hidden;
+}
+
+.vote-bar-fill {
+    height: 100%;
+    width: 0;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--neon-pink), var(--neon-cyan));
+    box-shadow: 0 0 10px rgba(0, 243, 255, 0.25);
+    transition: width var(--transition-normal);
 }
 
 .result-label {
