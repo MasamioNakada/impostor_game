@@ -68,10 +68,23 @@
         </main>
 
         <footer class="action-section">
-            <button id="start-game" class="btn btn-primary">
-                <span class="btn-icon">🚀</span>
-                Comenzar Juego
-            </button>
+            <div class="game-modes">
+                <h3 style="text-align: center; margin-bottom: 1rem; color: var(--neon-cyan); text-transform: uppercase; font-family: var(--font-heading);">Selecciona tu Modalidad</h3>
+                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                    <button id="start-game" class="btn btn-primary">
+                        <span class="btn-icon">👤</span>
+                        Solo (Clásico)
+                    </button>
+                    <button id="start-cluster-host" class="btn btn-secondary" style="border-color: var(--neon-pink); color: var(--neon-pink);">
+                        <span class="btn-icon">👑</span>
+                        Cluster (Crear Partida)
+                    </button>
+                    <button id="start-cluster-join" class="btn btn-secondary" style="border-color: var(--neon-yellow); color: var(--neon-yellow);">
+                        <span class="btn-icon">🔗</span>
+                        Encuentra tu Cluster
+                    </button>
+                </div>
+            </div>
         </footer>
     </div>
 

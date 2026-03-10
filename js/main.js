@@ -34,6 +34,22 @@
             startButton.addEventListener('touchstart', handleStartGame);
         }
 
+        const clusterHostBtn = document.getElementById('start-cluster-host');
+        if (clusterHostBtn) {
+            clusterHostBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                addPageTransition(() => window.location.href = 'cluster_host.html');
+            });
+        }
+        
+        const clusterJoinBtn = document.getElementById('start-cluster-join');
+        if (clusterJoinBtn) {
+            clusterJoinBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                addPageTransition(() => window.location.href = 'cluster_join.html');
+            });
+        }
+
         // Agregar feedback táctil mejorado
         document.querySelectorAll('.btn').forEach(button => {
             button.addEventListener('touchstart', function() {

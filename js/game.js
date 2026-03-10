@@ -75,10 +75,11 @@
         const nextPlayerButton = document.getElementById('next-player');
         const showResultsButton = document.getElementById('show-results');
         const resetGameButton = document.getElementById('reset-game');
-        const startDiscussionButton = document.getElementById('start-discussion');
+        const endGameFinalButton = document.getElementById('end-game-final');
         const newGameButton = document.getElementById('new-game');
         const closeModalButton = document.getElementById('close-modal');
         const continueDiscussionButton = document.getElementById('continue-discussion');
+        const endGameEarlyButton = document.getElementById('end-game-early');
 
         if (revealArea) {
             revealArea.addEventListener('click', handleRevealClick);
@@ -92,6 +93,11 @@
             nextPlayerButton.addEventListener('touchstart', handleNextPlayer);
         }
 
+        if (endGameEarlyButton) {
+            endGameEarlyButton.addEventListener('click', handleEndGameEarly);
+            endGameEarlyButton.addEventListener('touchstart', handleEndGameEarly);
+        }
+
         if (showResultsButton) {
             showResultsButton.addEventListener('click', handleShowResults);
             showResultsButton.addEventListener('touchstart', handleShowResults);
@@ -102,9 +108,9 @@
             resetGameButton.addEventListener('touchstart', handleResetGame);
         }
 
-        if (startDiscussionButton) {
-            startDiscussionButton.addEventListener('click', handleStartDiscussion);
-            startDiscussionButton.addEventListener('touchstart', handleStartDiscussion);
+        if (endGameFinalButton) {
+            endGameFinalButton.addEventListener('click', handleFinishGameWithResults);
+            endGameFinalButton.addEventListener('touchstart', handleFinishGameWithResults);
         }
 
         if (newGameButton) {
@@ -118,8 +124,8 @@
         }
 
         if (continueDiscussionButton) {
-            continueDiscussionButton.addEventListener('click', handleStartDiscussion);
-            continueDiscussionButton.addEventListener('touchstart', handleStartDiscussion);
+            continueDiscussionButton.addEventListener('click', handleContinueDiscussion);
+            continueDiscussionButton.addEventListener('touchstart', handleContinueDiscussion);
         }
 
         // Agregar feedback táctil mejorado
@@ -436,13 +442,35 @@
     }
 
     /**
+     * Maneja el botón de finalizar juego anticipadamente
+     * @param {Event} event - Evento del click/touch
+     */
+    function handleEndGameEarly(event) {
+        event.preventDefault();
+        
+        if (confirm('¿Estás seguro de finalizar el juego ahora? Se revelarán los roles.')) {
+            // Marcar todos como revelados
+            gameState.allPlayersRevealed = true;
+            
+            // Mostrar pantalla de completado (que oculta las acciones del juego)
+            showGameComplete();
+            
+            // Mostrar el modal con los resultados inmediatamente
+            showResultsModal();
+        }
+    }
+
+    /**
      * Muestra la pantalla de juego completado
      */
     function showGameComplete() {
         const gameComplete = document.getElementById('game-complete');
         const revealArea = document.getElementById('reveal-area');
         const gameActions = document.querySelector('.game-actions');
-
+        
+        // Marcar todos como revelados para evitar cambios de estado
+        gameState.allPlayersRevealed = true;
+        
         if (gameComplete && revealArea && gameActions) {
             // Ocultar área de juego
             revealArea.classList.add('hidden');
@@ -479,17 +507,14 @@
     }
 
     /**
-     * Maneja el botón de comenzar discusión
+     * Maneja el botón de finalizar juego al completar la partida mostrando resultados
      * @param {Event} event - Evento del click/touch
      */
-    function handleStartDiscussion(event) {
+    function handleFinishGameWithResults(event) {
         event.preventDefault();
         
-        // Ocultar modal si está abierto
-        hideResultsModal();
-
-        // Mostrar instrucciones de discusión
-        showDiscussionInstructions();
+        // Mostrar el modal con los resultados
+        showResultsModal();
     }
 
     /**
@@ -515,6 +540,17 @@
             // Volver a la pantalla de juego
             location.reload();
         }
+    }
+
+    /**
+     * Maneja el botón de continuar discusión (dentro del modal)
+     * @param {Event} event - Evento del click/touch
+     */
+    function handleContinueDiscussion(event) {
+        event.preventDefault();
+        
+        // Simplemente cerrar el modal para volver a la pantalla de completado
+        hideResultsModal();
     }
 
     /**
@@ -816,6 +852,7 @@
         const gameActions = document.querySelector('.game-actions');
         if (gameActions) {
             setTimeout(() => {
+                gameActions.classList.remove('hidden');
                 gameActions.classList.add('slide-in-up');
             }, 400);
         }

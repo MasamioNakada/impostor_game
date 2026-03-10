@@ -40,14 +40,18 @@
                 </div>
             </div>
 
-            <div class="game-actions">
-                <button id="next-player" class="btn btn-primary" disabled>
+            <div class="game-actions slide-in-up hidden">
+                <button id="next-player" class="btn btn-primary enhanced-pulse">
                     <span class="btn-icon">➡️</span>
                     Siguiente Jugador
                 </button>
                 <button id="show-results" class="btn btn-success hidden">
                     <span class="btn-icon">🏁</span>
                     Ver Resultados
+                </button>
+                <button id="end-game-early" class="btn btn-danger">
+                    <span class="btn-icon">🛑</span>
+                    Finalizar Juego
                 </button>
             </div>
         </main>
@@ -58,9 +62,9 @@
                 <h2>¡Juego Completado!</h2>
                 <p>Todos los jugadores han revelado sus roles</p>
                 <div class="complete-actions">
-                    <button id="start-discussion" class="btn btn-primary">
-                        <span class="btn-icon">💬</span>
-                        Comenzar Discusión
+                    <button id="end-game-final" class="btn btn-danger">
+                        <span class="btn-icon">🛑</span>
+                        Finalizar Juego
                     </button>
                     <button id="new-game" class="btn btn-secondary">
                         <span class="btn-icon">🔄</span>

@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>🕵️ El Impostor - Unirse a Cluster</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="css/animations.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        .waiting-animation {
+            text-align: center;
+            margin: 2rem 0;
+        }
+        .waiting-animation .dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: var(--neon-cyan);
+            margin: 0 5px;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+        .waiting-animation .dot:nth-child(1) { animation-delay: -0.32s; }
+        .waiting-animation .dot:nth-child(2) { animation-delay: -0.16s; }
+        
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+        
+        .role-card {
+            text-align: center;
+            padding: 2rem;
+            border: 2px solid var(--neon-cyan);
+            border-radius: var(--border-radius);
+            margin-bottom: 1rem;
+            cursor: pointer;
+        }
+        
+        .role-card.revealed {
+            border-color: var(--neon-pink);
+            background: rgba(188, 19, 254, 0.1);
+        }
+        
+        .voting-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .voting-list li {
+            margin-bottom: 1rem;
+        }
+        
+        .vote-btn {
+            width: 100%;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--neon-cyan);
+            color: #fff;
+            text-transform: uppercase;
+            font-family: var(--font-heading);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .vote-btn:hover, .vote-btn.selected {
+            background: var(--neon-cyan);
+            color: #000;
+            box-shadow: 0 0 10px var(--neon-cyan);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="page-header">
+            <h1>Unirse a Sala</h1>
+            <button id="back-btn" class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.8rem;">⬅ Volver</button>
+        </header>
+
+        <main class="content-section">
+            <!-- Join Form -->
+            <div id="join-section" class="card slide-in-up">
+                <h2>🔗 Conectar a Cluster</h2>
+                <div class="form-group">
+                    <label class="form-label">Código de Sala</label>
+                    <input type="text" id="room-code-input" class="form-input" placeholder="Ej: ABC12" style="text-transform: uppercase;">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tu Nombre</label>
+                    <input type="text" id="player-name-input" class="form-input" placeholder="Ej: Player 1">
+                </div>
+                <button id="join-btn" class="btn btn-primary full-width">
+                    <span class="btn-icon">🔌</span> Unirse
+                </button>
+                <p id="join-status" class="text-error hidden" style="margin-top: 10px; text-align: center;"></p>
+                
+                <!-- Room List Section -->
+                <div id="available-rooms" class="available-rooms-section">
+                    <h3 class="section-title">📡 Salas Disponibles</h3>
+                    <div id="rooms-list-container">
+                        <p class="text-center text-muted" id="no-rooms-msg">Buscando salas...</p>
+                        <ul id="rooms-list" class="rooms-list">
+                            <!-- Rooms will be added here dynamically -->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lobby (Waiting) -->
+            <div id="lobby-section" class="card hidden">
+                <h2>⏳ Esperando al Host</h2>
+                <div class="waiting-animation">
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                </div>
+                <p class="text-center">Conectado como: <strong id="my-name-display" style="color: var(--neon-cyan);">...</strong></p>
+                <p class="text-center" style="margin-top: 1rem; color: #888;">El juego comenzará pronto...</p>
+            </div>
+            
+            <!-- Game Interface -->
+            <div id="game-section" class="card hidden">
+                <h2>🎮 En Juego</h2>
+                
+                <!-- Reveal Phase -->
+                <div id="reveal-phase" class="hidden">
+                    <p class="text-center" style="margin-bottom: 1rem;">Toca para ver tu rol</p>
+                    <div id="role-card" class="role-card">
+                        <h1 style="font-size: 4rem;">❓</h1>
+                        <p>TOCA AQUÍ</p>
+                    </div>
+                    
+                    <div id="role-info" class="hidden">
+                        <h2 id="role-title" class="role-title">...</h2>
+                        <div id="secret-word-container" class="hidden">
+                            <p>Palabra Secreta:</p>
+                            <div id="secret-word" class="keyword">...</div>
+                        </div>
+                        <p id="role-hint" class="hint">...</p>
+                    </div>
+                </div>
+                
+                <!-- Discussion Phase -->
+                <div id="discussion-phase" class="hidden">
+                    <h3 class="text-center" style="color: var(--neon-yellow);">🗣️ DISCUSIÓN EN CURSO</h3>
+                    <p class="text-center">Descubran al impostor...</p>
+                </div>
+                
+                <!-- Voting Phase -->
+                <div id="voting-phase" class="hidden">
+                    <h3 class="text-center" style="color: var(--neon-red);">🗳️ VOTA AL IMPOSTOR</h3>
+                    <ul id="voting-list" class="voting-list">
+                        <!-- Player buttons -->
+                    </ul>
+                    <button id="submit-vote-btn" class="btn btn-danger full-width" disabled>ENVIAR VOTO</button>
+                </div>
+                
+                <!-- Results Phase -->
+                <div id="results-phase" class="hidden">
+                    <h3 class="text-center" style="color: var(--neon-green);">🏆 RESULTADOS</h3>
+                    <div id="results-content" class="text-center">
+                        <!-- Results go here -->
+                    </div>
+                    <p class="text-center" style="margin-top: 1rem;">Esperando nueva partida...</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
+    <script src="js/storage.js"></script>
+    <script src="js/cluster-manager.js"></script>
+    <script src="js/cluster-join.js"></script>
+</body>
+</html>
