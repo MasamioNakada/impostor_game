@@ -8,34 +8,12 @@
 
     // Configuración de la API
     const API_CONFIG = {
-        BASE_URL: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent',
+        BASE_URL: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent',
         TIMEOUT: 10000, // 10 segundos
         MAX_RETRIES: 3
     };
 
-    // Palabras por defecto por categoría (fallback)
-    const DEFAULT_WORDS = {
-        'animales': ['perro', 'gato', 'elefante', 'león', 'tigre', 'mono', 'delfín', 'águila'],
-        'paises': ['México', 'Argentina', 'España', 'Francia', 'Italia', 'Japón', 'Brasil', 'Canadá'],
-        'comida': ['pizza', 'hamburguesa', 'tacos', 'sushi', 'pasta', 'helado', 'chocolate', 'café'],
-        'colores': ['rojo', 'azul', 'verde', 'amarillo', 'morado', 'naranja', 'rosa', 'negro'],
-        'profesiones': ['médico', 'profesor', 'ingeniero', 'artista', 'chef', 'piloto', 'abogado', 'policía'],
-        'deportes': ['fútbol', 'baloncesto', 'tenis', 'natación', 'ciclismo', 'boxeo', 'golf', 'voleibol'],
-        'música': ['guitarra', 'piano', 'batería', 'violín', 'saxofón', 'trumpeta', 'flauta', 'acordeón'],
-        'tecnología': ['smartphone', 'computadora', 'internet', 'robot', 'inteligencia artificial', 'realidad virtual', 'dron', 'satélite']
-    };
-
-    // Pistas genéricas para el impostor
-    const GENERIC_HINTS = [
-        'Es algo que todos conocemos',
-        'Se puede encontrar en la naturaleza',
-        'Es parte de nuestra vida diaria',
-        'Tiene diferentes formas o tipos',
-        'Se relaciona con los sentidos',
-        'Es importante para la sociedad',
-        'Puede ser grande o pequeño',
-        'Tiene historia y tradición'
-    ];
+    const FALLBACK_WORDS_URL = 'data/fallback_words.json';
 
     /**
      * Clase para interactuar con Google Gemini API
@@ -44,6 +22,43 @@
         constructor() {
             this.apiKey = null;
             this.retryCount = 0;
+            this.fallbackWords = null;
+            this.fallbackWordsPromise = null;
+        }
+
+        async loadFallbackWords() {
+            if (this.fallbackWords) return this.fallbackWords;
+            if (this.fallbackWordsPromise) return this.fallbackWordsPromise;
+
+            this.fallbackWordsPromise = fetch(FALLBACK_WORDS_URL)
+                .then(r => {
+                    if (!r.ok) throw new Error(`No se pudo cargar fallback: ${r.status}`);
+                    return r.json();
+                })
+                .then(data => {
+                    if (!Array.isArray(data)) throw new Error('Fallback inválido');
+                    const normalized = data
+                        .filter(x => x && typeof x.palabra === 'string')
+                        .map(x => ({
+                            palabra: x.palabra,
+                            tema: typeof x.tema === 'string' ? x.tema : '',
+                            generic_hint: typeof x.generic_hint === 'string' ? x.generic_hint : ''
+                        }));
+                    if (normalized.length === 0) throw new Error('Fallback vacío');
+                    this.fallbackWords = normalized;
+                    return this.fallbackWords;
+                })
+                .catch(() => {
+                    this.fallbackWords = [
+                        { palabra: 'Objeto', tema: 'general', generic_hint: 'Es algo que todos conocemos' }
+                    ];
+                    return this.fallbackWords;
+                })
+                .finally(() => {
+                    this.fallbackWordsPromise = null;
+                });
+
+            return this.fallbackWordsPromise;
         }
 
         /**
@@ -62,7 +77,8 @@
         async generateKeyword(theme = null) {
             if (!this.apiKey) {
                 console.log('Modo offline: usando palabra de respaldo');
-                return this.getFallbackWord(theme);
+                const entry = await this.getFallbackEntry(theme);
+                return this.sanitizeKeyword(entry.palabra);
             }
 
             try {
@@ -76,7 +92,8 @@
                 console.error('Error al generar palabra:', error);
                 
                 // Fallback a palabra aleatoria del tema
-                return this.getFallbackWord(theme);
+                const entry = await this.getFallbackEntry(theme);
+                return this.sanitizeKeyword(entry.palabra);
             }
         }
 
@@ -89,7 +106,8 @@
         async generateHint(keyword, theme = null) {
             if (!this.apiKey) {
                 console.log('Modo offline: usando pista de respaldo');
-                return this.getFallbackHint(keyword, theme);
+                const entry = await this.getFallbackEntry(theme, keyword);
+                return this.sanitizeHint(entry.generic_hint || `Es algo relacionado con ${theme || 'un tema'} que todos conocemos`);
             }
 
             try {
@@ -103,7 +121,8 @@
                 console.error('Error al generar pista:', error);
                 
                 // Fallback a pista genérica
-                return this.getFallbackHint(keyword, theme);
+                const entry = await this.getFallbackEntry(theme, keyword);
+                return this.sanitizeHint(entry.generic_hint || `Es algo relacionado con ${theme || 'un tema'} que todos conocemos`);
             }
         }
 
@@ -140,14 +159,17 @@
          * @returns {string} Prompt formateado
          */
         buildHintPrompt(keyword, theme) {
-            return `Genera UNA sola pista sutil para ayudar a alguien a adivinar la palabra "${keyword}".
-                    La pista debe ser:
-                    - Sutil y no demasiado obvia
-                    - Útil pero no reveladora
-                    - Apropiada para un juego de adivinanzas
-                    - En español y máximo 15 palabras
-                    
-                    Responde SOLO con la pista, sin mencionar la palabra "${keyword}" ni dar explicaciones adicionales.`;
+            return `Genera UNA sola pista MUY sutil (obviedad 3/10) para ayudar a alguien a acercarse a la palabra "${keyword}" sin revelarla.
+
+Reglas estrictas:
+- NO uses sinónimos, traducciones, definiciones, ni des la respuesta de forma directa.
+- NO describas características físicas obvias, la función principal o el uso típico.
+- NO menciones letras, sílabas, rimas, ni pistas tipo "empieza con".
+- Usa una asociación indirecta: una situación, contexto, metáfora o consecuencia.
+- Máximo 12 palabras.
+- En español.
+
+Responde SOLO con la pista.`;
         }
 
         /**
@@ -280,7 +302,7 @@
          */
         sanitizeHint(hint) {
             if (!hint || typeof hint !== 'string') {
-                return this.getRandomGenericHint();
+                return 'Es algo que todos conocemos';
             }
 
             // Limpiar el texto
@@ -300,17 +322,7 @@
          * @returns {string} Palabra de respaldo
          */
         getFallbackWord(theme) {
-            if (theme) {
-                const themeLower = theme.toLowerCase().trim();
-                const words = DEFAULT_WORDS[themeLower] || DEFAULT_WORDS['animales'];
-                return words[Math.floor(Math.random() * words.length)];
-            } else {
-                // Seleccionar una categoría aleatoria
-                const categories = Object.keys(DEFAULT_WORDS);
-                const randomCategory = categories[Math.floor(Math.random() * categories.length)];
-                const words = DEFAULT_WORDS[randomCategory];
-                return words[Math.floor(Math.random() * words.length)];
-            }
+            return 'Objeto';
         }
 
         /**
@@ -320,20 +332,27 @@
          * @returns {string} Pista de respaldo
          */
         getFallbackHint(keyword, theme) {
-            // Intentar generar una pista basada en la palabra y tema
-            if (theme) {
-                return `Es algo relacionado con ${theme} que todos conocemos`;
-            } else {
-                return this.getRandomGenericHint();
-            }
+            return 'Es algo que todos conocemos';
         }
 
         /**
          * Obtiene una pista genérica aleatoria
          * @returns {string} Pista genérica
          */
-        getRandomGenericHint() {
-            return GENERIC_HINTS[Math.floor(Math.random() * GENERIC_HINTS.length)];
+        async getFallbackEntry(theme = null, keyword = null) {
+            const list = await this.loadFallbackWords();
+            if (keyword) {
+                const match = list.find(x => x.palabra.toLowerCase() === String(keyword).toLowerCase());
+                if (match) return match;
+            }
+
+            const normalizedTheme = theme ? String(theme).toLowerCase().trim() : null;
+            const candidates = normalizedTheme
+                ? list.filter(x => String(x.tema || '').toLowerCase().trim() === normalizedTheme)
+                : list;
+
+            const pool = candidates.length ? candidates : list;
+            return pool[Math.floor(Math.random() * pool.length)];
         }
 
         /**
@@ -342,25 +361,31 @@
          * @returns {Promise<Object>} Objeto con palabra y pista
          */
         async generateWordAndHint(theme = null) {
+            if (!this.apiKey) {
+                const entry = await this.getFallbackEntry(theme);
+                return {
+                    keyword: this.sanitizeKeyword(entry.palabra),
+                    hint: this.sanitizeHint(entry.generic_hint),
+                    source: 'fallback'
+                };
+            }
+
             try {
                 const keyword = await this.generateKeyword(theme);
                 const hint = await this.generateHint(keyword, theme);
-                
+
                 return {
-                    keyword: keyword,
-                    hint: hint,
+                    keyword,
+                    hint,
                     source: 'api'
                 };
             } catch (error) {
                 console.error('Error al generar palabra y pista:', error);
-                
-                // Fallback completo
-                const keyword = this.getFallbackWord(theme);
-                const hint = this.getFallbackHint(keyword, theme);
-                
+
+                const entry = await this.getFallbackEntry(theme);
                 return {
-                    keyword: keyword,
-                    hint: hint,
+                    keyword: this.sanitizeKeyword(entry.palabra),
+                    hint: this.sanitizeHint(entry.generic_hint),
                     source: 'fallback'
                 };
             }
