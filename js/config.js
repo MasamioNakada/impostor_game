@@ -10,6 +10,7 @@
     let configState = {
         apiKey: '',
         theme: '',
+        showHints: true,
         isValidating: false
     };
 
@@ -40,6 +41,7 @@
         const backButton = document.getElementById('back-btn');
         const apiKeyInput = document.getElementById('api-key');
         const themeInput = document.getElementById('theme');
+        const showHintsInput = document.getElementById('show-hints');
 
         if (form) {
             form.addEventListener('submit', handleFormSubmit);
@@ -57,6 +59,12 @@
 
         if (themeInput) {
             themeInput.addEventListener('input', handleThemeInput);
+        }
+
+        if (showHintsInput) {
+            showHintsInput.addEventListener('change', (e) => {
+                configState.showHints = Boolean(e.target.checked);
+            });
         }
 
         // Agregar feedback táctil mejorado
@@ -82,6 +90,7 @@
         if (existingConfig) {
             const apiKeyInput = document.getElementById('api-key');
             const themeInput = document.getElementById('theme');
+            const showHintsInput = document.getElementById('show-hints');
             
             if (apiKeyInput && existingConfig.apiKey) {
                 apiKeyInput.value = existingConfig.apiKey;
@@ -91,6 +100,12 @@
             if (themeInput && existingConfig.theme) {
                 themeInput.value = existingConfig.theme;
                 configState.theme = existingConfig.theme;
+            }
+
+            if (showHintsInput) {
+                const showHints = existingConfig.showHints !== false;
+                showHintsInput.checked = showHints;
+                configState.showHints = showHints;
             }
             
             console.log('Configuración existente cargada');
@@ -152,7 +167,8 @@
         // Guardar configuración
         const config = {
             apiKey: configState.apiKey,
-            theme: configState.theme || null
+            theme: configState.theme || null,
+            showHints: configState.showHints
         };
         
         const saved = window.gameStorage.saveConfig(config);

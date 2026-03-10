@@ -44,9 +44,12 @@ class GameStorage {
         if (!this.isAvailable) return false;
         
         try {
+            const existing = this.getConfig() || {};
             const configData = {
+                ...existing,
                 apiKey: config.apiKey,
-                theme: config.theme || null,
+                theme: config.theme !== undefined ? (config.theme || null) : (existing.theme || null),
+                showHints: config.showHints !== undefined ? Boolean(config.showHints) : (existing.showHints !== false),
                 timestamp: Date.now()
             };
             

@@ -12,6 +12,7 @@
     const state = {
         apiKey: null,
         impostorCount: 1,
+        showHints: true,
         players: [], // { id, name, token, rejoinCode, role, vote, connected, disconnectedAt }
         gameStatus: 'setup', // setup, lobby, playing, discussion, voting, results
         word: null,
@@ -54,6 +55,7 @@
         roleHint: document.getElementById('role-hint'),
         impostorSelector: document.getElementById('impostor-selector'),
         apiKeyInput: document.getElementById('api-key'),
+        showHintsInput: document.getElementById('show-hints'),
         createLobbyBtn: document.getElementById('create-lobby-btn'),
         revealMyRoleBtn: document.getElementById('reveal-my-role-btn'),
         startDiscussionBtn: document.getElementById('start-discussion-btn'),
@@ -131,6 +133,12 @@
         if (config && config.apiKey) {
             elements.apiKeyInput.value = config.apiKey;
         }
+
+        if (elements.showHintsInput) {
+            const showHints = !config || config.showHints !== false;
+            elements.showHintsInput.checked = showHints;
+            state.showHints = showHints;
+        }
     }
 
     function createLobby() {
@@ -139,9 +147,12 @@
         }
 
         const apiKey = elements.apiKeyInput.value.trim();
+        state.showHints = elements.showHintsInput ? Boolean(elements.showHintsInput.checked) : true;
         if (apiKey) {
             window.geminiAPI.setApiKey(apiKey);
-            window.gameStorage.saveConfig({ apiKey }); // Save for future
+            window.gameStorage.saveConfig({ apiKey, showHints: state.showHints });
+        } else {
+            window.gameStorage.saveConfig({ apiKey: '', showHints: state.showHints });
         }
         state.apiKey = apiKey;
 
@@ -156,6 +167,8 @@
             
             // Add self as player (Host is always a player)
             addPlayer(id, 'Host (Tú)');
+
+            broadcastSettings();
             
             // Broadcast Room Availability via GunDB
             publishRoom(id);
@@ -183,6 +196,7 @@
             }
 
             window.clusterManager.sendTo(peerId, 'joined', { status: 'success' });
+            sendSettings(peerId);
             syncRejoiningPlayer(result.id);
         });
         
@@ -236,6 +250,14 @@
                 });
             }
         }, 30000);
+    }
+
+    function sendSettings(peerId) {
+        window.clusterManager.sendTo(peerId, 'settings', { showHints: state.showHints });
+    }
+
+    function broadcastSettings() {
+        window.clusterManager.broadcast('settings', { showHints: state.showHints });
     }
 
     function addPlayer(id, name, token = null, rejoinCode = null) {
@@ -499,7 +521,7 @@
             const roleData = {
                 role: player.role,
                 word: player.role === 'impostor' ? null : state.word,
-                hint: player.role === 'impostor' ? state.hint : null
+                hint: player.role === 'impostor' ? (state.showHints ? state.hint : null) : null
             };
             
             if (player.id === window.clusterManager.myId) {
@@ -522,7 +544,7 @@
         
         if (isImpostor) {
             elements.secretWordContainer.classList.add('hidden');
-            elements.roleHint.textContent = `Pista: ${state.myRoleData.hint}`;
+            elements.roleHint.textContent = state.myRoleData.hint ? `Pista: ${state.myRoleData.hint}` : '🙈 Pista oculta';
         } else {
             elements.secretWordContainer.classList.remove('hidden');
             elements.secretWord.textContent = state.myRoleData.word;
@@ -789,10 +811,12 @@
             const roleData = {
                 role: player.role,
                 word: player.role === 'impostor' ? null : state.word,
-                hint: player.role === 'impostor' ? state.hint : null
+                hint: player.role === 'impostor' ? (state.showHints ? state.hint : null) : null
             };
             window.clusterManager.sendTo(peerId, 'role_assigned', roleData);
         }
+
+        sendSettings(peerId);
 
         if (state.gameStatus === 'discussion') {
             window.clusterManager.sendTo(peerId, 'phase_change', { phase: 'discussion' });
@@ -836,7 +860,7 @@
             elements.hostRoleTitle.textContent = 'ERES EL IMPOSTOR';
             elements.hostRoleTitle.className = 'role-title impostor-role';
             elements.hostSecretWordContainer.classList.add('hidden');
-            const hint = state.myRoleData.hint ? `Pista: ${state.myRoleData.hint}` : 'Pista';
+            const hint = state.myRoleData.hint ? `Pista: ${state.myRoleData.hint}` : '🙈 Pista oculta';
             elements.hostRoleHint.textContent = hint;
             return;
         }

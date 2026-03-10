@@ -21,7 +21,8 @@
     // Estado de la UI
     let uiState = {
         isRevealed: false,
-        isGenerating: false
+        isGenerating: false,
+        showHints: true
     };
 
     let touchState = {
@@ -172,6 +173,7 @@
 
             // Configurar la API key (puede ser null para modo offline)
             window.geminiAPI.setApiKey(storedConfig.apiKey);
+            uiState.showHints = storedConfig.showHints !== false;
 
             // Cargar estado
             gameState = {
@@ -440,9 +442,12 @@
         let contentHTML = '';
 
         if (isImpostor) {
+            const hintBlock = uiState.showHints
+                ? `<div class="hint">💡 Pista: ${gameState.impostorHint}</div>`
+                : `<div class="hint">🙈 Pista oculta</div>`;
             contentHTML = `
                 <div class="role-title">🕵️ ¡Eres el IMPOSTOR!</div>
-                <div class="hint">💡 Pista: ${gameState.impostorHint}</div>
+                ${hintBlock}
                 <div class="hint">Tu misión: Descubre qué palabra están pensando los demás</div>
             `;
         } else {

@@ -30,6 +30,7 @@
         role: null,
         word: null,
         hint: null,
+        showHints: true,
         players: [], // List of all players
         vote: null,
         reconnectTimer: null,
@@ -181,6 +182,11 @@
             } else {
                 resetRoleCard();
             }
+        });
+
+        window.clusterManager.on('settings', (payload) => {
+            if (!payload) return;
+            state.showHints = payload.showHints !== false;
         });
 
         window.clusterManager.on('phase_change', (payload) => {
@@ -581,7 +587,7 @@
             elements.roleTitle.textContent = 'ERES EL IMPOSTOR';
             elements.roleTitle.className = 'role-title impostor-role';
             elements.secretWordContainer.classList.add('hidden');
-            elements.roleHint.textContent = `Pista: ${state.hint}`;
+            elements.roleHint.textContent = (state.showHints && state.hint) ? `Pista: ${state.hint}` : '🙈 Pista oculta';
             return;
         }
 
