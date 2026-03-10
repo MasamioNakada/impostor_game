@@ -44,8 +44,12 @@
         newGameBtn: document.getElementById('new-game-btn'),
         hostVotingArea: document.getElementById('host-voting-area'),
         hostVotingList: document.getElementById('host-voting-list'),
-        hostSubmitVoteBtn: document.getElementById('host-submit-vote-btn')
+        hostSubmitVoteBtn: document.getElementById('host-submit-vote-btn'),
+        roomQr: document.getElementById('room-qr'),
+        roomJoinLink: document.getElementById('room-join-link')
     };
+
+    let roomQrInstance = null;
 
     // Initialize
     function init() {
@@ -101,11 +105,11 @@
         state.apiKey = apiKey;
 
         // Init Peer
-        const roomId = Math.random().toString(36).substring(2, 8).toUpperCase();
-        window.clusterManager.init(roomId);
+        window.clusterManager.init();
         
         window.clusterManager.on('ready', (id) => {
             elements.roomCode.textContent = id;
+            renderRoomQr(id);
             showScreen('lobby');
             
             // Add self as player (Host is always a player)
@@ -133,6 +137,30 @@
         
         window.clusterManager.on('vote', (payload, peerId) => {
             recordVote(peerId, payload.candidateId);
+        });
+    }
+
+    function renderRoomQr(roomId) {
+        if (!elements.roomQr || !elements.roomJoinLink) return;
+
+        const joinUrl = new URL('cluster_join.html', window.location.href);
+        joinUrl.searchParams.set('room', roomId);
+
+        elements.roomJoinLink.href = joinUrl.toString();
+        elements.roomJoinLink.textContent = joinUrl.toString();
+
+        elements.roomQr.innerHTML = '';
+        roomQrInstance = null;
+
+        if (typeof window.QRCode !== 'function') return;
+
+        roomQrInstance = new window.QRCode(elements.roomQr, {
+            text: joinUrl.toString(),
+            width: 200,
+            height: 200,
+            colorDark: '#000000',
+            colorLight: '#ffffff',
+            correctLevel: window.QRCode.CorrectLevel.M
         });
     }
 

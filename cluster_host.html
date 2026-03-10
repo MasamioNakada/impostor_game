@@ -47,6 +47,27 @@
             margin-bottom: 1rem;
             color: var(--neon-yellow);
         }
+
+        .room-qr-wrapper {
+            margin-top: var(--spacing-md);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .room-qr {
+            background: #fff;
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.25);
+        }
+
+        .room-join-link {
+            font-size: 0.9rem;
+            color: var(--neon-cyan);
+            word-break: break-all;
+        }
     </style>
 </head>
 <body>
@@ -83,6 +104,12 @@
                 <div class="room-code-display">
                     <p style="margin-bottom: 5px; color: #888;">CÓDIGO DE SALA</p>
                     <h1 id="room-code">...</h1>
+
+                    <div class="room-qr-wrapper">
+                        <p style="margin: 0; color: #888;">O escanea este QR</p>
+                        <div id="room-qr" class="room-qr" aria-label="QR para unirse"></div>
+                        <a id="room-join-link" class="room-join-link" href="#" target="_blank" rel="noopener noreferrer"></a>
+                    </div>
                 </div>
                 
                 <div class="players-list-container">
@@ -160,6 +187,7 @@
     <!-- Scripts -->
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="js/storage.js"></script>
     <script src="js/gemini.js"></script>
     <script src="js/cluster-manager.js"></script>

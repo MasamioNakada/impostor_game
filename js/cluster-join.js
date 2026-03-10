@@ -6,6 +6,8 @@
 (function() {
     'use strict';
 
+    const ROOM_CODE_LENGTH = 4;
+
     // State
     const state = {
         hostId: null,
@@ -47,6 +49,8 @@
         setupEventListeners();
         window.clusterManager.init(); // Init with random ID
         listenForRooms();
+
+        prefillRoomCodeFromUrl();
         
         window.clusterManager.on('ready', (id) => {
             state.myId = id;
@@ -164,6 +168,13 @@
 
     function setupEventListeners() {
         elements.joinBtn.addEventListener('click', handleJoin);
+
+        elements.roomCodeInput.addEventListener('input', () => {
+            const normalized = normalizeRoomCode(elements.roomCodeInput.value);
+            if (elements.roomCodeInput.value !== normalized) {
+                elements.roomCodeInput.value = normalized;
+            }
+        });
         
         elements.roleCard.addEventListener('click', () => {
             elements.roleCard.classList.add('hidden');
@@ -200,6 +211,12 @@
             elements.joinStatus.classList.remove('hidden');
             return;
         }
+
+        if (roomCode.length !== ROOM_CODE_LENGTH) {
+            elements.joinStatus.textContent = `El código debe tener ${ROOM_CODE_LENGTH} caracteres`;
+            elements.joinStatus.classList.remove('hidden');
+            return;
+        }
         
         state.myName = name;
         elements.myNameDisplay.textContent = name;
@@ -208,6 +225,24 @@
         elements.joinBtn.disabled = true;
         
         window.clusterManager.connectToHost(roomCode);
+    }
+
+    function normalizeRoomCode(value) {
+        const upper = (value || '').toUpperCase();
+        const alnumOnly = upper.replace(/[^A-Z0-9]/g, '');
+        return alnumOnly.slice(0, ROOM_CODE_LENGTH);
+    }
+
+    function prefillRoomCodeFromUrl() {
+        const params = new URLSearchParams(window.location.search);
+        const room = params.get('room');
+        if (!room) return;
+
+        const normalized = normalizeRoomCode(room);
+        if (normalized.length !== ROOM_CODE_LENGTH) return;
+
+        elements.roomCodeInput.value = normalized;
+        elements.playerNameInput.focus();
     }
 
     function resetRoleCard() {

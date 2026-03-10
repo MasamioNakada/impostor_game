@@ -11,6 +11,8 @@ class ClusterManager {
         this.isHost = false;
         this.myId = null;
         this.callbacks = {};
+        this._initProvidedId = false;
+        this._initAttempts = 0;
     }
 
     /**
@@ -18,29 +20,51 @@ class ClusterManager {
      * @param {string} id - ID opcional (si no se provee, se genera uno)
      */
     init(id = null) {
-        // Generar ID corto si no se provee (para facilitar la entrada)
-        // Nota: En producción masiva, esto podría tener colisiones.
-        const peerId = id || this.generateShortId();
-        
+        this._initProvidedId = typeof id === 'string' && id.trim().length > 0;
+        this._initAttempts = 0;
+
+        this.connections = [];
+        this.hostConn = null;
+        this.myId = null;
+
+        this._initPeer(id);
+    }
+
+    _initPeer(id = null) {
+        const peerId = this._initProvidedId ? id : this.generateShortId();
+
+        if (this.peer) {
+            try {
+                this.peer.destroy();
+            } catch (e) {
+            }
+        }
+
         this.peer = new Peer(peerId, {
             debug: 2
         });
-        
+
         this.peer.on('open', (id) => {
             this.myId = id;
             console.log('Mi Peer ID:', id);
             this.emit('ready', id);
         });
-        
+
         this.peer.on('connection', (conn) => {
             this.handleConnection(conn);
         });
-        
+
         this.peer.on('error', (err) => {
+            if (err && err.type === 'unavailable-id' && !this._initProvidedId && this._initAttempts < 5) {
+                this._initAttempts += 1;
+                this._initPeer(null);
+                return;
+            }
+
             console.error('Peer error:', err);
             this.emit('error', err);
         });
-        
+
         this.peer.on('disconnected', () => {
             console.log('Desconectado del servidor PeerJS');
             this.emit('disconnected');
@@ -48,10 +72,10 @@ class ClusterManager {
     }
 
     /**
-     * Genera un ID corto aleatorio (6 caracteres)
+     * Genera un ID corto aleatorio (4 caracteres)
      */
     generateShortId() {
-        return Math.random().toString(36).substring(2, 8).toUpperCase();
+        return Math.random().toString(36).substring(2, 6).toUpperCase();
     }
 
     /**
